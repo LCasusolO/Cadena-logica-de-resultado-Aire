@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Aire en la Region de las Américas</title>
+    <style>
+        /* --- FUENTE Y ESTILOS BASE --- */
+        :root {
+            /* --- PALETA DE COLORES REFINADA --- */
+            
+            /* Paleta Verde */
+            --color-green-primary: #3AB14B;
+            --color-green-light: #EFF8EF;
+            --color-green-dark: #2A8C39;
+            --color-focus-green: #196727;
+            --color-focus-green-light: #e0f2e3;
+
+            /* Paleta Celeste */
+            --color-blue-primary: #00B0F0;
+            --color-blue-light: #E0F5FF;
+            --color-blue-dark: #008BC0;
+            --color-focus-blue: #005C8C;
+            --color-focus-blue-light: #C0E9FF;
+            
+            /* Paleta General */
+            --color-primary-dark: #00539B; /* Azul Marino */
+            --color-accent: #F7931E;       /* Naranja */
+            --color-light-bg: #EAF4FC;
+            --color-accent-light-bg: #FFF3E6;
+            
+            /* Paleta Temática */
+            --color-water-theme: #00B0F0;       /* Celeste (Agua) */
+            --color-sanitation-theme: #3AB14B; /* Verde (Saneamiento) */
+
+            /* --- MAPEO DE PALETA PARA ESTE DOCUMENTO --- */
+            /* Aquí asignamos las nuevas variables a las variables que usa el CSS actual */
+            --col-1: var(--color-accent);           /* Naranja */
+            --col-2: var(--color-sanitation-theme); /* Verde (Output) */
+            --col-3: var(--color-water-theme);      /* Celeste (Outcome) */
+            --col-4: var(--color-primary-dark);     /* Azul Marino (Impact) */
+
+            /* --- Variables de UI Base (Conservadas) --- */
+            --text-light: #ffffff;
+            --bg-body: #f4f7f9;
+            --card-bg: #ffffff;
+            --arrow-color: #cccccc;
+            --text-color: #333;
+        }
+
+        /* --- NUEVO: Estilos de Header --- */
+        .main-header {
+            width: 100%; /* Ocupa todo el ancho */
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+            border-bottom: 2px solid rgba(0, 83, 155, 0.1); 
+            padding: 1rem 0;
+            box-sizing: border-box;
+            /* Fondo blanco SÓLIDO para tapar la imagen de fondo en la zona del header */
+            background-color: #ffffff; 
+            z-index: 10; /* Asegura que esté por encima si fuera necesario */
+        }
+        
+        .header-content {
+            width: 100%;
+            max-width: 1400px;
+            padding: 0 2rem; /* Padding interno para alinear con el contenido */
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        
+        .header-logo {
+            height: 80px;
+            width: auto;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        /* --- Fin Estilos de Header --- */
+        
+        /* --- Título principal (MODIFICADO CON CAJA TRANSPARENTE) --- */
+        .main-title {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--color-primary-dark);
+            margin: 0;
+            line-height: 1.2;
+            text-align: center;
+            
+            /* --- ESTILOS DE CAJA (BOX) --- */
+            background-color: rgba(255, 255, 255, 0.85); /* Blanco al 85% de opacidad */
+            backdrop-filter: blur(5px); /* Efecto borroso detras */
+            -webkit-backdrop-filter: blur(5px);
+            
+            padding: 1.5rem 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 50, 100, 0.15);
+            
+            /* Centrado */
+            margin: 1.5rem auto 0 auto;
+            width: auto;
+            max-width: 90%;
+            box-sizing: border-box;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            
+            /* --- CONFIGURACIÓN DE IMAGEN DE FONDO (RESTAURADA) --- */
+            background-image: url('fondo.jpg'); 
+            background-size: cover;            
+            background-position: center;        
+            background-attachment: fixed;        
+            background-repeat: no-repeat;        
+            /* ----------------------------------------------- */
+
+            margin: 0;
+            padding: 0;
+            
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem; /* Espacio vertical entre elementos */
+            min-height: 100vh;
+            color: var(--text-color);
+            box-sizing: border-box;
+            padding-bottom: 2rem; /* Espacio solo al final de la página */
+        }
+
+        /* --- CONTENEDOR PRINCIPAL (Mobile First) --- */
+        .logic-chain-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 1400px;
+            width: calc(100% - 4rem); /* Restamos espacio para los márgenes laterales */
+        }
+
+        /* --- TARJETAS (ITEMS) --- */
+        .chain-item {
+            flex: 1;
+            background: transparent; /* Fondo transparente para que solo se vea el contenido */
+            /* Quitamos el shadow del contenedor principal para que no se vea una caja vacía */
+            box-shadow: none; 
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        /* Aplicamos el fondo y la sombra a las partes visibles */
+        .chain-item.active {
+             /* Opcional: Si quieres sombra general al abrirse */
+        }
+
+        /* Flechas Conectoras (Mobile: Abajo) */
+        .chain-item::after {
+            content: '▼';
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--arrow-color);
+            font-size: 24px;
+            z-index: 0;
+            opacity: 0.7;
+        }
+
+        .chain-item:last-child::after { display: none; }
+        .chain-item:not(:last-child) { margin-bottom: 25px; }
+
+
+        /* -----------------------------------------------------------
+            MODIFICACIÓN PRINCIPAL: HEADER Y CONTENIDO PLEGABLE
+            ----------------------------------------------------------- */
+
+        /* --- CABECERA (TÍTULO CLICABLE) --- */
+        .item-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.25rem;
+            user-select: none;
+            
+            /* ESTADO INICIAL: Bordes totalmente redondeados */
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08); /* Sombra en el header */
+            
+            transition: background-color 0.3s ease, border-radius 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .item-header:hover {
+            opacity: 0.95;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .toggle-icon {
+            font-size: 1.8rem;
+            font-weight: 300;
+            transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        /* Colores Específicos por Columna */
+        .item-1 .item-header { background-color: var(--col-1); }
+        .item-2 .item-header { background-color: var(--col-2); }
+        .item-3 .item-header { background-color: var(--col-3); }
+        .item-4 .item-header { background-color: var(--col-4); }
+
+        /* --- CUANDO ESTÁ ACTIVO (ABIERTO) --- */
+        .chain-item.active .item-header {
+            /* Quitamos bordes inferiores para unir con el contenido */
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .chain-item.active .toggle-icon {
+            transform: rotate(135deg);
+        }
+
+        /* --- CONTENEDOR DE RESUMEN (AHORA OCULTO AL INICIO) --- */
+        .item-summary {
+            background-color: var(--card-bg);
+            overflow: hidden;
+            
+            /* ESTADO INICIAL: CERRADO */
+            max-height: 0;
+            padding: 0 25px; 
+            opacity: 0;
+            
+            transition: all 0.5s cubic-bezier(0.17, 0.84, 0.44, 1);
+            
+            /* Sombra lateral para dar continuidad visual */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        /* ESTADO ACTIVO: ABIERTO */
+        .chain-item.active .item-summary {
+            max-height: 800px; /* Altura máxima suficiente */
+            padding: 20px 25px;
+            opacity: 1;
+        }
+
+        .item-summary .indicator-item {
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+
+        /* --- CONTENIDO DETALLADO (ACORDEÓN) --- */
+        .item-content {
+            max-height: 0;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            padding: 0 25px;
+            opacity: 0; /* Agregamos opacidad para transición suave */
+            
+            /* Bordes inferiores siempre redondeados para cerrar la tarjeta */
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            
+            transition: max-height 0.7s cubic-bezier(0.17, 0.84, 0.44, 1), padding 0.5s ease, opacity 0.5s ease;
+            
+            /* Sombra lateral */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        /* ESTADO ACTIVO: ABIERTO */
+        .chain-item.active .item-content {
+            max-height: 2000px; /* Altura máxima suficiente */
+            opacity: 1;
+            /* El padding se maneja mejor en el .content-inner o dinámicamente, pero aquí mantenemos el lateral */
+        }
+
+        .content-inner {
+            padding-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            border-top: 1px solid #eee; /* Línea separadora sutil */
+            padding-top: 20px;
+        }
+        
+        /* -----------------------------------------------------------
+            FIN MODIFICACIONES
+            ----------------------------------------------------------- */
+        
+        /* --- ESTILO PARA LOS LINKS --- */
+        .link-styled {
+            color: inherit; 
+            text-decoration: none; 
+            border-bottom: 1px dotted currentColor; 
+            transition: all 0.2s ease;
+        }
+        .link-styled:hover {
+            opacity: 0.7; 
+            border-bottom: 1px solid currentColor; 
+            cursor: pointer;
+        }
+        .disease-tag .link-styled {
+            border-bottom: none;
+        }
+        .disease-tag .link-styled:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        /* --- Estilos para Tarjetas de Indicador (Cols 2 & 3) --- */
+        .indicator-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .indicator-item {
+            background: var(--bg-body);
+            border-radius: 8px;
+            padding: 15px 20px;
+            border-left: 4px solid;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .indicator-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .indicator-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+        .indicator-desc {
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        /* Colorear bordes de indicadores */
+        .item-1 .indicator-item { border-left-color: var(--col-1); }
+        .item-2 .indicator-item { border-left-color: var(--col-2); }
+        .item-3 .indicator-item { border-left-color: var(--col-3); }
+        .item-4 .indicator-item { border-left-color: var(--col-4); }
+
+        /* --- Estilo para listas DENTRO de tarjetas de indicador (Col 1) --- */
+        .indicator-list-content {
+            padding-left: 20px;
+            margin: 10px 0 0 0;
+            list-style-type: disc;
+        }
+        .indicator-list-content li {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #555;
+            padding-left: 0;
+        }
+        .item-1 .indicator-list-content li::marker { color: var(--col-1); }
+
+
+        /* --- RESPONSIVE (DESKTOP) --- */
+        @media (min-width: 1024px) {
+            .logic-chain-container {
+                flex-direction: row;
+                align-items: flex-start;
+                gap: 40px;
+            }
+            .chain-item { margin-bottom: 0; }
+            .chain-item:not(:last-child) { margin-bottom: 0; }
+            .chain-item::after {
+                content: '▶';
+                font-size: 30px;
+                top: 22px;
+                right: -32px;
+                left: auto;
+                bottom: auto;
+                transform: none;
+                opacity: 0.5;
+            }
+        }
+
+        /* --- Header Responsive (Móvil) --- */
+        @media (max-width: 768px) {
+            .header-content {
+                 padding: 0 1.5rem;
+                 justify-content: center;
+            }
+            .header-logo { height: 50px; }
+            .main-title { 
+                font-size: 1.75rem; 
+                padding: 1rem 1.5rem;
+                width: calc(100% - 2rem);
+            }
+            .logic-chain-container { width: calc(100% - 2rem); } 
+        }
+        
+        /* Grid para la lista de enfermedades */
+        .disease-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* --- Estilo para Etiquetas de Enfermedad (Col 4) --- */
+        .disease-tag {
+            background-color: #f0f3f5;
+            color: #555;
+            border: 1px solid #e0e5e9;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: default;
+            display: inline-flex;
+        }
+        .disease-tag:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .item-summary .indicator-item { font-weight: 500; }
+
+    </style>
+</head>
+<body>
+
+<!-- --- Header --- -->
+<header class="main-header">
+    <div class="header-content">
+        <!-- LINK RESTAURADO A TU ARCHIVO LOCAL -->
+        <img src="logo-es.png" alt="Logo OPS" class="header-logo">
+    </div>
+</header>
+
+<!-- Título con caja transparente -->
+<h1 class="main-title">Dashboard de Aire en la Region de las Américas</h1>
+
+<div class="logic-chain-container">
+
+    <!-- COLUMNA 1: Productos y Servicios -->
+    <div class="chain-item item-1">
+        <div class="item-header" data-js-toggle>
+            <span>Products and Services</span>
+            <span class="toggle-icon">+</span>
+        </div>
+        <div class="item-content">
+            <div class="content-inner">
+                <div class="indicator-list">
+                    <div class="indicator-item">
+                        <span class="indicator-title">Cursos y Herramientas</span>
+                        <ul class="indicator-list-content">
+                            <li>
+                                <a href="https://campus.paho.org/es/curso/AirQ" target="_blank" class="link-styled">Curso AirQ+</a></li>
+                            <li>
+                                <a href="https://campus.paho.org/mooc/login/index.php" target="_blank" class="link-styled"> Curso Gestión Calidad del Aire</a></li>
+                            <li>
+                                <a href="https://www.who.int/tools/airq" target="_blank" class="link-styled">Herramienta AirQ+</a></li>
+                            <li>
+                                <a href="https://www.who.int/tools/heat-for-walking-and-cycling" target="_blank" class="link-styled">Herramienta HEAT</a></li>
+                            <li>
+                                <a href="https://www.who.int/europe/tools-and-toolkits/greenur--the-green-urban-spaces-and-health-tool#:~:text=To%20quantify%20the%20impacts%20of,well%20as%20indirect%20impacts%20%E2%80%93%20for" class="link-styled">Herramienta GreenUr</a></li>
+                            <li>
+                                <a href="https://www.who.int/europe/tools-and-toolkits/climate-change-mitigation--air-quality-and-health-(climaq-h)" target="_blank" class="link-styled">Herramienta CLIMA-QH</a></li>
+                            <li>
+                                <a href="https://www.who.int/tools/clean-household-energy-solutions-toolkit" target="_blank" class="link-styled">Herramienta CHEST</a></li>
+                            <li>
+                                <a href="https://www.who.int/tools/benefits-of-action-to-reduce-household-air-pollution-tool" target="_blank" class="link-styled">Herramienta BAR-HAP</a></li>
+                            <li>
+                                <a href="https://www.who.int/publications/i/item/WHO-HEP-ECH-AQH-2022.4" target="_blank" class="link-styled">Herramienta HEART</a></li>
+                        </ul>
+                    </div>
+                    <div class="indicator-item">
+                        <span class="indicator-title">Guías y datos</span>
+                        <ul class="indicator-list-content">
+                            <li>
+                                <a href="https://iris.who.int/bitstream/handle/10665/345329/9789240034228-eng.pdf" target="_blank" class="link-styled">Guías de Calidad del aire de la OMS, 2021</a></li>
+                            <li>
+                                <a href="https://www.who.int/publications/i/item/9789241548885" class="link-styled">Directrices de la OMS para la calidad del aire interior: combustión de combustibles domésticos</a></li>
+                            <li>
+                                <a href="https://www.who.int/data/gho/data/themes/air-pollution" class="link-styled">Portal de datos de Calidad del aire </a></li>
+                            <li>
+                                <a href="https://www.who.int/publications/i/item/9789240070202" class="link-styled">Guía para la planificación de políticas y programas de energía doméstica limpia</a></li>
+                            <li>
+                                <a href="https://www.paho.org/en/evidence-and-intelligence-action-health/core-indicators-2023" class="link-styled">PAHO Core indicators</a></li>
+                            <li>
+                                <a href="https://www.who.int/data/gho/data/indicators/indicator-details/GHO/ambient-air-pollution-attributable-deaths" class="link-styled">El observatorio mundial de la salud</a></li>
+                        </ul>
+                    </div>
+                    <div class="indicator-item">
+                        <span class="indicator-title">Estrategias regionales</span>
+                        <ul class="indicator-list-content">
+                            <li>
+                                <a href="https://www.paho.org/es/temas/calidad-aire" target="_blank" class="link-styled">Plan de acción regional de aire y salud</a></li>
+                            <li>
+                                <a href="https://www.paho.org/es/grupo-experto-regional-airq-para-america-latina-caribe" class="link-styled">Grupo experto Regional en AirQ+</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMNA 2: Output Indicator -->
+    <div class="chain-item item-2">
+        <div class="item-header" data-js-toggle>
+            <span>Output Indicator</span>
+            <span class="toggle-icon">+</span>
+        </div>
+
+        <div class="item-content">
+            <div class="content-inner">
+                <div class="indicator-list">
+                    <div class="indicator-item">
+                        <span class="indicator-title">OPT 18.2.c</span>
+                        <p class="indicator-desc"> 
+                            <a href="#" target="_blank" class="link-styled"> 
+                        Número de países que incorporan la dimensión salud en sus planes de calidad del aire exterior
+                            </a>
+                        </p>
+                    </div>
+                    <div class="indicator-item">
+                        <span class="indicator-title">OPT 18.2.f </span>
+                        <p class="indicator-desc"> 
+                            <a href="#" target="_blank" class="link-styled">
+                                Número de países que incorporan la dimensión salud en sus políticas de energía en el hogar
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMNA 3: Outcome Indicator -->
+    <div class="chain-item item-3">
+        <div class="item-header" data-js-toggle>
+            <span>Outcome Indicator</span>
+            <span class="toggle-icon">+</span>
+        </div>
+
+        <div class="item-content">
+            <div class="content-inner">
+                <div class="indicator-list">
+                    <div class="indicator-item">
+                        <span class="indicator-title">OCM 18.e</span>
+                        <p class="indicator-desc">
+                            <a href="https://www.who.int/data/gho/data/indicators/indicator-details/GHO/gho-phe-primary-reliance-on-clean-fuels-and-technologies-proportion" target="_blank" class="link-styled">
+                                ODS 7.1.2. Proporción de la población cuya fuente primaria de energía son los combustibles y tecnologías limpios (%)
+                            </a>
+                        </p>
+                    </div>
+                    <div class="indicator-item">
+                        <span class="indicator-title">Parte de OCM 18.f</span>
+                        <p class="indicator-desc">
+                            <a href="https://www.who.int/data/gho/data/indicators/indicator-details/GHO/concentrations-of-fine-particulate-matter-(pm2-5)" target="_blank" class="link-styled">
+                                ODS 11.6.2.  Niveles medios anuales de partículas finas en suspensión (PM2.5 y PM10) en las ciudades 
+
+                            </a>
+                        </p>
+                    </div>
+                    <div class="indicator-item">
+                        <span class="indicator-title">OCM 18.f</span>
+                        <p class="indicator-desc">
+                            <a href="https://www.who.int/data/gho/data/indicators/indicator-details/GHO/population-practising-open-defecation-(-)" target="_blank" class="link-styled">
+                                Número de ciudades avanzando hacia el cumplimiento de las guías de la Organización Mundial de la Salud PM2.5 
+                            </a>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMNA 4: Impact Indicator -->
+    <div class="chain-item item-4">
+        <div class="item-header" data-js-toggle>
+            <span>Impact Indicator</span>
+            <span class="toggle-icon">+</span>
+        </div>
+
+        <div class="item-content">
+            <div class="content-inner">              
+                <div class="indicator-list">
+
+                    <div class="indicator-item">
+                        <p class="indicator-desc">
+                            <a href="https://www.who.int/data/gho/data/indicators/indicator-details/GHO/ambient-and-household-air-pollution-attributable-death-rate-(per-100-000-population-age-standardized)" target="_blank" class="link-styled">
+                                ODS 3.9.1 Tasa de mortalidad atribuida a la contaminación del aire ambiente y en los hogares (por 100.000 habitantes) 
+                            </a>
+                        </p>
+                    </div>
+
+                    <div class="indicator-item">
+                        <span class="indicator-title">Enfermedades Asociadas con mala Calidad del aire</span>
+                        <div class="disease-list">
+                            <span class="disease-tag"><a href="#" class="link-styled">Enfermedad isquémica del corazón</a></span>
+                            <span class="disease-tag"><a href="#" class="link-styled">Accidente cerebrovascular Enfermedad pulmonar obstructiva crónica (EPOC)</a></span>
+                            <span class="disease-tag"><a href="#" class="link-styled">Cáncer del pulmón</a></span>
+                            <span class="disease-tag"><a href="#" class="link-styled">Infección respiratoria aguda baja</a></span>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('click', function(e) {
+        const header = e.target.closest('[data-js-toggle]');
+        if (!header) return; 
+        const item = header.parentElement; 
+        item.classList.toggle('active');
+        const icon = item.querySelector('.toggle-icon');
+        if (item.classList.contains('active')) {
+            icon.textContent = '+'; 
+            /* El icono rota gracias al CSS, no necesitas cambiar el texto a '-' si prefieres la animación de giro */
+        } else {
+            icon.textContent = '+';
+        }
+    });
+</script>
+
+</body>
+</html>
